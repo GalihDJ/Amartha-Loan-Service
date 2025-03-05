@@ -1,4 +1,4 @@
-# Amartha-Loan-Service
+![Swagger](https://github.com/user-attachments/assets/4ac6cb1e-c84c-448c-bdf8-4f7cc7a7c6f1)# Amartha-Loan-Service
 This is a loan engine service project where user can request for funding loan. Employee can approve a loan request by providing employee id and picture of proof. Approved loan request can be invested by investors. Once the investments have reached the treshold amount requested on the loan request, it will send link to agreement letter to all investors. 
 
 This project implements PostgreSQL database and Swagger for API documentation. This project is broken down into 4 layers:
@@ -40,3 +40,8 @@ These instructions will get you a copy of the project up and running on your loc
     ```bash
         localhost:3000/swagger/index.html#/
     ```
+* The Swagger UI should appear like this
+  ![Swagger](https://github.com/user-attachments/assets/e6a9913d-cbcf-446f-9310-9292fa95f8c7)
+
+
+
