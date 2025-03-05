@@ -25,8 +25,7 @@ type ILoanService interface {
 	GetLoanRequestById(loanRequestID string) (*models.LoanRequest, error)
 	ApproveLoanRequest(loanRequestID string, loanApproval *models.LoanApproval) error
 	CreateLoanInvestment(loanRequestID string, loanInvestment *models.LoanInvestment) error
-
-	CreateInvestor(investor *models.Investor) (int, error)
+	CreateLoanDisbursement(loanRequestID string, loanDisbursement *models.LoanDisbursement) error
 }
 
 // CreateLoanRequest implements ILoanService.
@@ -101,8 +100,6 @@ func (ls *LoanService) CreateLoanInvestment(loanRequestID string, loanInvestment
 		return err
 	}
 
-	fmt.Println("Loan Rquest: ", loanRequest)
-
 	// check loan request state
 	if loanRequest.State != models.StateApproved {
 		return errors.New("investments can only be added to APPROVED loan request")
@@ -139,28 +136,79 @@ func (ls *LoanService) CreateLoanInvestment(loanRequestID string, loanInvestment
 
 	// check if total investment and investment amount is equal to principal amount
 	if totalInvestment+loanInvestment.Amount == loanRequest.PrincipalAmount {
-		
+
+		// update loan request to INVESTED
+		err = ls.repo.UpdateLoanRequestToInvested(loanRequestID)
+		if err != nil {
+			return err
+		}
+
+		// obtain investor IDs from investments data
+		loanInvestments, err := ls.repo.GetLoanInvestments(loanRequestID)
+		if err != nil {
+			return err
+		}
+
+		// get investor emails
+
+		// define array to store emails
+		var investorEmails []string
+
+		// loop through loanInvestments
+		for index := range loanInvestments {
+
+			// call GetInvestorEmail repo to get investor email
+			investorEmail, err := ls.repo.GetInvestorEmail(loanInvestments[index].InvestorID)
+			fmt.Println("investor id: ", loanInvestments[index].InvestorID)
+			fmt.Println("investor email: ", investorEmail)
+			if err != nil {
+				log.Println("Error: ", err)
+				return err
+			}
+
+			// append email to array
+			investorEmails = append(investorEmails, investorEmail)
+			fmt.Println("In loop: ", investorEmails)
+		}
+
+		fmt.Println("After loop: ", investorEmails)
+
+		// mock send email
+		MockSendEmail(investorEmails)
 	}
 
 	return nil
 }
 
-// ======================================================================================================================
+// CreateLoanDisbursement implements ILoanService.
+func (ls *LoanService) CreateLoanDisbursement(loanRequestID string, loanDisbursement *models.LoanDisbursement) error {
 
-// CreateInvestor implements ILoanService.
-func (ls *LoanService) CreateInvestor(investor *models.Investor) (int, error) {
-	// generate ID
-	investorID := uuid.New()
-	investor.InvestorID = investorID.String()
+	// define loan request id
+	loanDisbursement.DisbursementID = uuid.New().String()
 
-	// get the current datetime
-	var currentDatetime = time.Now()
-	investor.CreatedDate = currentDatetime
+	// define created date
+	loanDisbursement.DisbursementDate = time.Now()
 
-	rowsAffected, err := ls.repo.CreateInvestor(investor)
+	fmt.Println("Loan disbursement: ")
+	fmt.Println(loanRequestID, loanDisbursement)
+	err := ls.repo.CreateLoanDisbursement(loanRequestID, loanDisbursement)
 	if err != nil {
-		log.Println("Error: ", err)
-		return 0, err
+		return err
 	}
-	return rowsAffected, err
+
+	return nil
+}
+
+// mock function to send email
+
+func MockSendEmail(recipients []string) {
+
+	const bodyEmail = "Here is the link to the loan agreement letter: https://picsum.photos/200/300"
+
+	for _, email := range recipients {
+		fmt.Println("---------------------------")
+		fmt.Printf("Sending email to: %s\n", email)
+		fmt.Printf("Email Body: %s\n", bodyEmail)
+		fmt.Println("---------------------------")
+	}
 }

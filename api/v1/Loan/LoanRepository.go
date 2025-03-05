@@ -23,10 +23,11 @@ type ILoanRepository interface {
 	GetLoanRequestById(loanRequestID string) (*models.LoanRequest, error)
 	ApproveLoan(loanRequestID string, loanApproval *models.LoanApproval) error
 	CreateLoanInvestment(loanInvestment *models.LoanInvestment) (int, error)
+	CreateLoanDisbursement(loanRequestID string, loanDisbursement *models.LoanDisbursement) error
 
 	GetLoanInvestments(loanRequestID string) ([]models.LoanInvestment, error)
-
-	CreateInvestor(investor *models.Investor) (int, error)
+	UpdateLoanRequestToInvested(loanRequestID string) error
+	GetInvestorEmail(investorID string) (string, error)
 }
 
 // CreateLoanRequest implements ILoanRepository.
@@ -135,7 +136,6 @@ func (lr *LoanRepository) ApproveLoan(loanRequestID string, loanApproval *models
 	}
 
 	// update the loan request state
-
 	updateLoanQuery := "UPDATE loan_request SET state = $1 WHERE loan_request_id = $2"
 	fmt.Println("updateLoanQuery: ", updateLoanQuery)
 
@@ -146,16 +146,12 @@ func (lr *LoanRepository) ApproveLoan(loanRequestID string, loanApproval *models
 	}
 
 	// insert loan request approval details
-
 	insertLoanApprovalQuery := "INSERT INTO loan_approval (loan_approval_id, loan_request_id, field_validator_proof, employee_id, approved_date) "
 	insertLoanApprovalQuery += "VALUES ($1, $2, $3, $4, $5)"
-	fmt.Println("insertLoanApprovalQuery: ", insertLoanApprovalQuery)
 
 	_, err = tx.Exec(insertLoanApprovalQuery,
 		loanApproval.LoanApprovalID, loanRequestID, loanApproval.FieldValidatorProof, loanApproval.EmployeeID, loanApproval.ApprovedDate)
 	if err != nil {
-
-		fmt.Println("ERR: ", err)
 		tx.Rollback()
 		return err
 	}
@@ -219,14 +215,12 @@ func (lr *LoanRepository) GetLoanInvestments(loanRequestID string) ([]models.Loa
 
 	defer db.Close()
 
+	// query to get loan investments
 	query := "SELECT il.investment_id, il.investor_id, il.amount FROM investment_list il "
 	query += "INNER JOIN loan_request lr ON il.loan_request_id = lr.loan_request_id "
 	query += "WHERE lr.loan_request_id = $1"
 
-	// query := "SELECT cr.prompt_template FROM chatbot_role cr "
-	// query += "INNER JOIN chatbot_sessions cs ON cr.chatbot_role_id = cs.chatbot_role_id "
-	// query += "WHERE cs.session_id = $1"
-
+	// execute query
 	rows, err := db.Query(query, loanRequestID)
 	if err != nil {
 		return nil, err
@@ -234,6 +228,7 @@ func (lr *LoanRepository) GetLoanInvestments(loanRequestID string) ([]models.Loa
 
 	defer rows.Close()
 
+	// assign query result as array of structs
 	var loanInvestments []models.LoanInvestment
 	for rows.Next() {
 		var loanInvestment models.LoanInvestment
@@ -251,35 +246,106 @@ func (lr *LoanRepository) GetLoanInvestments(loanRequestID string) ([]models.Loa
 
 }
 
-// CreateInvestor implements ILoanRepository.
-func (lr *LoanRepository) CreateInvestor(investor *models.Investor) (int, error) {
+// CreateLoanDisbursement implements ILoanRepository.
+func (lr *LoanRepository) CreateLoanDisbursement(loanRequestID string, loanDisbursement *models.LoanDisbursement) error {
 
+	// connect to DB
 	db, err := lr.connPSQL.ConnectionOpenPSQL()
 
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	defer db.Close()
 
-	query := "INSERT INTO investor_list (investor_id, investor_name, investor_email, created_date)"
-	query += " VALUES ($1, $2, $3, $4)"
-
-	result, err := db.Exec(query,
-		investor.InvestorID,
-		investor.InvestorName,
-		investor.InvestorEmail,
-		investor.CreatedDate,
-	)
-
+	// start transaction
+	tx, err := db.Begin()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	rowsAffected, err := result.RowsAffected()
+	fmt.Println("loanRequestId REPO: ", loanRequestID)
+
+	// update the loan request state
+	updateLoanQuery := "UPDATE loan_request SET state = $1 WHERE loan_request_id = $2"
+
+	_, err = tx.Exec(updateLoanQuery, models.StateDisbursed, loanRequestID)
 	if err != nil {
-		return 0, fmt.Errorf("could not fetch rows affected: %v", err)
+		tx.Rollback()
+		return err
 	}
 
-	return int(rowsAffected), err
+	// insert loan request disbursement details
+	insertLoanDisbursementQuery := "INSERT INTO loan_disbursement (disbursement_id, loan_request_id, agreement_letter_url, employee_id, disbursement_date) "
+	insertLoanDisbursementQuery += "VALUES ($1, $2, $3, $4, $5)"
+
+	_, err = tx.Exec(insertLoanDisbursementQuery,
+		loanDisbursement.DisbursementID, loanRequestID, loanDisbursement.AgreementLetterURL, loanDisbursement.EmployeeID, loanDisbursement.DisbursementDate)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
+
+// UpdateLoanRequestToInvested implements ILoanRepository.
+func (lr *LoanRepository) UpdateLoanRequestToInvested(loanRequestID string) error {
+
+	// connect to DB
+	db, err := lr.connPSQL.ConnectionOpenPSQL()
+
+	if err != nil {
+		return err
+	}
+
+	defer db.Close()
+
+	// query to update loan request state to invested
+	query := "UPDATE loan_request SET state = $2 WHERE loan_request_id = $1"
+
+	_, err = db.Exec(query, loanRequestID, models.StateInvested)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
+}
+
+// GetInvestorEmail implements ILoanRepository.
+func (lr *LoanRepository) GetInvestorEmail(investorID string) (string, error) {
+
+	// connect to DB
+	db, err := lr.connPSQL.ConnectionOpenPSQL()
+
+	if err != nil {
+		return "", err
+	}
+
+	defer db.Close()
+
+	// query to get investor email
+	query := "SELECT investor_email FROM investor_list "
+	query += "WHERE investor_id = $1"
+	fmt.Println("Executed query: ", query)
+
+	var investorEmail string
+
+	row := db.QueryRow(query, investorID)
+	err = row.Scan(&investorEmail)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return " ", err
+		} else {
+			log.Fatal(err)
+		}
+	}
+
+	return investorEmail, err
 }

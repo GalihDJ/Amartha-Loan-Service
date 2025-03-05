@@ -29,19 +29,22 @@ func NewLoanController(service ILoanService) *LoanController {
 // @Router /api/v1/loan [post]
 func (lc *LoanController) CreateLoanRequest(c *gin.Context) {
 
+	// define variable to store struct
 	var loanRequest models.LoanRequest
 
+	// bind value from user input
 	if err := c.ShouldBindJSON(&loanRequest); err != nil {
 		c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
 		return
 	}
 
-	rowsAffected, err := lc.service.CreateLoanRequest(&loanRequest)
+	// call CreateLoanRequest service
+	createdLoanRequest, err := lc.service.CreateLoanRequest(&loanRequest)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"rows_affected": rowsAffected})
+	c.JSON(http.StatusOK, gin.H{"loan_request": createdLoanRequest})
 }
 
 // GetLoanRequestById godoc
@@ -54,8 +57,10 @@ func (lc *LoanController) CreateLoanRequest(c *gin.Context) {
 // @Router /api/v1/loan/{loanRequestID} [get]
 func (lc *LoanController) GetLoanRequestById(c *gin.Context) {
 
+	// bind parameter from input
 	loanRequestID := c.Param("loanRequestID")
 
+	// call GetLoanRequestById service
 	loanRequest, err := lc.service.GetLoanRequestById(loanRequestID)
 
 	if err != nil {
@@ -82,15 +87,19 @@ func (lc *LoanController) GetLoanRequestById(c *gin.Context) {
 // @Router /api/v1/loan/{loanRequestID} [put]
 func (lc *LoanController) ApproveLoanRequest(c *gin.Context) {
 
+	// define variable to store struct
 	var approveLoanRequest models.LoanApproval
 
+	// bind parameter from input
 	loanRequestID := c.Param("loanRequestID")
 
+	// bind value from user input
 	if err := c.ShouldBindJSON(&approveLoanRequest); err != nil {
 		c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
 		return
 	}
 
+	// call ApproveLoanRequest service
 	err := lc.service.ApproveLoanRequest(loanRequestID, &approveLoanRequest)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error",
@@ -115,15 +124,19 @@ func (lc *LoanController) ApproveLoanRequest(c *gin.Context) {
 // @Router /api/v1/loan/{loanRequestID}/investment [post]
 func (lc *LoanController) CreateLoanInvestment(c *gin.Context) {
 
+	// define variable to store struct
 	var loanInvestment models.LoanInvestment
 
+	// bind parameter from input
 	loanRequestID := c.Param("loanRequestID")
 
+	// bind value from user input
 	if err := c.ShouldBindJSON(&loanInvestment); err != nil {
 		c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
 		return
 	}
 
+	// call CreateLoanInvestment service
 	err := lc.service.CreateLoanInvestment(loanRequestID, &loanInvestment)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error",
@@ -142,56 +155,33 @@ func (lc *LoanController) CreateLoanInvestment(c *gin.Context) {
 // @Tags Loan
 // @Accept json
 // @Produce json
-// @Param models.LoanRequestSwagger body models.LoanRequestSwagger true "Loan Request parameters"
+// @Param loanRequestID path string true "Loan Request ID"
+// @Param models.LoanDisbursementSwagger body models.LoanDisbursementSwagger true "Loan Disbursement parameters"
 // @Success 200
-// @Router /api/v1/loan/disbursement [post]
-func (lc *LoanController) LoanDisbursement(c *gin.Context) {
-	var loanRequest models.LoanRequest
+// @Router /api/v1/loan/{loanRequestID}/disbursement [post]
+func (lc *LoanController) CreateLoanDisbursement(c *gin.Context) {
 
-	// userCred := sec.GetCurrentUser(c)
-	// fmt.Println("userCred: ", userCred.ID)
+	// define variable to store struct
+	var loanDisbursement models.LoanDisbursement
 
-	if err := c.ShouldBindJSON(&loanRequest); err != nil {
+	// bind parameter from input
+	loanRequestID := c.Param("loanRequestID")
+
+	// bind value from user input
+	if err := c.ShouldBindJSON(&loanDisbursement); err != nil {
 		c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
 		return
 	}
 
-	// documentLibrary.UserID = userCred.ID
-
-	// loanRequestID, err := lc.service.CreateLoanRequest(&loanRequest)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	// 	return
-	// }
-	// c.JSON(http.StatusOK, gin.H{"library id": loanRequestID})
-}
-
-// =============================================================================== TEST API ===============================================================================
-
-// CreateInvestor godoc
-// @Summary Create new investor
-// @Description Create a new investor
-// @Tags Loan
-// @Accept json
-// @Produce json
-// @Param models.InvestorSwagger body models.InvestorSwagger true "Investor parameters"
-// @Success 200
-// @Router /api/v1/loan/investor [post]
-func (lc *LoanController) CreateInvestor(c *gin.Context) {
-	var investor models.Investor
-
-	// userCred := sec.GetCurrentUser(c)
-	// fmt.Println("userCred: ", userCred.ID)
-
-	if err := c.ShouldBindJSON(&investor); err != nil {
-		c.JSON(http.StatusNoContent, gin.H{"error": err.Error()})
-		return
-	}
-
-	createdInvestorID, err := lc.service.CreateInvestor(&investor)
+	// call CreateLoanDisbursement service
+	err := lc.service.CreateLoanDisbursement(loanRequestID, &loanDisbursement)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error",
+			"message": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"library id": createdInvestorID})
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"message": "Loan disbursement success",
+	})
 }

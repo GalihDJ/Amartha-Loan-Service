@@ -14,17 +14,17 @@ const (
 
 // loan request model
 type LoanRequest struct {
-	LoanRequestID       string            `json:"loan_request_id"`
-	BorrowerID          string            `json:"borrower_id"`
-	PrincipalAmount     float64           `json:"principal_amount"`
-	Rate                float64           `json:"rate"`
-	ROI                 float64           `json:"roi"`
-	State               LoanState         `json:"state"`
-	CreatedDate         time.Time         `json:"created_date" format:"date-time"`
-	AgreementLetterLink string            `json:"agreement_letter_link"`
-	LoanApproval        *LoanApproval     `json:"loan_approval"`
-	LoanInvestments     []LoanInvestment  `json:"loan_investments"`
-	LoanDisbursement    *LoanDisbursement `json:"loan_disbursement"`
+	LoanRequestID       string    `json:"loan_request_id"`
+	BorrowerID          string    `json:"borrower_id"`
+	PrincipalAmount     float64   `json:"principal_amount"`
+	Rate                float64   `json:"rate"`
+	ROI                 float64   `json:"roi"`
+	State               LoanState `json:"state"`
+	CreatedDate         time.Time `json:"created_date" format:"date-time"`
+	AgreementLetterLink string    `json:"agreement_letter_link"`
+	// LoanApproval        *LoanApproval     `json:"loan_approval"`
+	// LoanInvestments     []LoanInvestment  `json:"loan_investments"`
+	// LoanDisbursement    *LoanDisbursement `json:"loan_disbursement"`
 }
 
 // loan request model for swagger
@@ -70,10 +70,18 @@ type LoanInvestmentSwagger struct {
 
 // disbursement of loan
 type LoanDisbursement struct {
+	DisbursementID     string    `json:"disbursement_id"`
 	LoanRequestID      string    `json:"loan_request_id"`
-	AgreementLetterURL string    `json:"agreement_letter_url"`
+	AgreementLetterURL string    `json:"agreement_letter_url" default:"https://picsum.photos/200/300"`
 	EmployeeID         string    `json:"employee_id"`
-	DisbursedDate      time.Time `json:"disbursed_date"`
+	DisbursementDate   time.Time `json:"disbursed_date"`
+}
+
+// disbursement of loan model for swagger
+type LoanDisbursementSwagger struct {
+	LoanRequestID      string `json:"loan_request_id"`
+	AgreementLetterURL string `json:"agreement_letter_url" default:"https://picsum.photos/200/300"`
+	EmployeeID         string `json:"employee_id"`
 }
 
 type Investor struct {

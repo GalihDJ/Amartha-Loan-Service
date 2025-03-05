@@ -22,8 +22,6 @@ func InitializeLoanRouters(router *gin.Engine, controller *LoanController) {
 		loanGroup.GET("loan/:loanRequestID", controller.GetLoanRequestById)
 		loanGroup.PUT("loan/:loanRequestID", controller.ApproveLoanRequest)
 		loanGroup.POST("loan/:loanRequestID/investment", controller.CreateLoanInvestment)
-		loanGroup.POST("loan/disbursement", controller.LoanDisbursement)
-
-		loanGroup.POST("loan/investor", controller.CreateInvestor)
+		loanGroup.POST("loan/:loanRequestID/disbursement", controller.CreateLoanDisbursement)
 	}
 }
