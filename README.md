@@ -21,3 +21,22 @@ Several adjustments were made for this assignment purposes:
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
+* Clone the repository and navigate to the project directory.
+* Install all its dependencies by running the command below.
+
+    ```bash
+    go mod tidy
+    ```
+* Run command below to generate the Swagger documentation
+    ```bash
+    swag init
+    ```
+* Run the app.
+    ```bash
+    go run main.go
+    ```
+* Input the link below into your browser
+
+    ```bash
+        localhost:3000/swagger/index.html#/
+    ```
