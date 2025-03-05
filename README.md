@@ -53,4 +53,5 @@ These instructions will get you a copy of the project up and running on your loc
 https://medium.com/@zum.hatice/how-to-create-a-postgresql-db-and-connect-in-windows-b26eaa48c7fb
 
 * The database connection takes parameter from the .env file. We can adjust the parameters so it matched with the credentials we inputted during the creation of the database.
-  
+![env](https://github.com/user-attachments/assets/a488c82e-1bf4-401f-982c-9f633262a096)
+
