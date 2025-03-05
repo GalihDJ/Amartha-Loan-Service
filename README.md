@@ -38,7 +38,7 @@ These instructions will get you a copy of the project up and running on your loc
 * Input the link below into your browser
 
     ```bash
-        localhost:3000/swagger/index.html#/
+    localhost:3000/swagger/index.html#/
     ```
 * The Swagger UI should appear like this
   ![Swagger](https://github.com/user-attachments/assets/e6a9913d-cbcf-446f-9310-9292fa95f8c7)
@@ -50,6 +50,7 @@ These instructions will get you a copy of the project up and running on your loc
 ![ERD](https://github.com/user-attachments/assets/d6f3e6d0-023d-4659-ae98-37c48db82d99)
 
 * We also used DBeaver as the database tool. To install PostgreSQL, setting up the database, and install DBeaver please follow this link
+
 https://medium.com/@zum.hatice/how-to-create-a-postgresql-db-and-connect-in-windows-b26eaa48c7fb
 
 * The database connection takes parameter from the .env file. We can adjust the parameters so it matched with the credentials we inputted during the creation of the database.
