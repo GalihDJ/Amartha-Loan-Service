@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 
@@ -57,12 +58,12 @@ func main() {
 	router.Use(CORSMiddleware())
 
 	// swagger basepath and host
-	docs.SwaggerInfo.BasePath = "/"
-	docs.SwaggerInfo.Host = "localhost:3000"
+	docs.SwaggerInfo.BasePath = os.Getenv("SWAGGER_BASE_PATH")
+	docs.SwaggerInfo.Host = os.Getenv("SWAGGER_HOST")
 	fmt.Println("Host: ", docs.SwaggerInfo.Host)
 
 	// connect PSQL
-	connPSQL := conn.ConnectionMapPSQL["DEVELOPMENT"]
+	connPSQL := conn.ConnectionMapPSQL[os.Getenv("LOAN_SERVICE_PLATFORM_ENVIRONMENT")]
 	fmt.Println("PSQL DB: " + connPSQL.Database)
 
 	// initialize router for modules

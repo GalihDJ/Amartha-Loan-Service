@@ -2,8 +2,11 @@ package connections
 
 import (
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
@@ -21,16 +24,30 @@ var ConnectionMapPSQL map[string]ConnectionPSQL
 func init() {
 	ConnectionMapPSQL = make(map[string]ConnectionPSQL)
 
-	connPSQL := ConnectionPSQL{
-		Host:     "localhost",
-		Port:     "5432",
-		SSLMode:  "disable",
-		Username: "postgres",
-		Password: "admin",
-		Database: "postgres",
+	if os.Getenv("LOAN_SERVICE_PLATFORM_ENVIRONMENT") == "DEVELOPMENT" || os.Getenv("LOAN_SERVICE_PLATFORM_ENVIRONMENT") == "" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatalf("Error loading .env file: %v", err)
+		}
 	}
 
-	ConnectionMapPSQL["DEVELOPMENT"] = connPSQL
+	psqlHost := os.Getenv("POSTGRES_DB_HOST")
+	psqlPort := os.Getenv("POSTGRES_DB_PORT")
+	psqlSSLMode := os.Getenv("POSTGRES_DB_SSL_MODE")
+	psqlUsername := os.Getenv("POSTGRES_DB_USERNAME")
+	psqlPassword := os.Getenv("POSTGRES_DB_PASSWORD")
+	psqlDatabase := os.Getenv("POSTGRES_DB_DATABASE")
+
+	connPSQL := ConnectionPSQL{
+		Host:     psqlHost,
+		Port:     psqlPort,
+		SSLMode:  psqlSSLMode,
+		Username: psqlUsername,
+		Password: psqlPassword,
+		Database: psqlDatabase,
+	}
+
+	ConnectionMapPSQL[os.Getenv("LOAN_SERVICE_PLATFORM_ENVIRONMENT")] = connPSQL
 }
 
 func (c *ConnectionPSQL) ConnectionStringPSQL() string {
@@ -39,9 +56,8 @@ func (c *ConnectionPSQL) ConnectionStringPSQL() string {
 }
 
 func (c *ConnectionPSQL) ConnectionOpenPSQL() (*sqlx.DB, error) {
-	fmt.Println("In connectionOpen")
+
 	psqlDb, err := sqlx.Connect("postgres", c.ConnectionStringPSQL())
-	fmt.Println("psqlDb: ", psqlDb)
 
 	if err != nil {
 		return nil, err
