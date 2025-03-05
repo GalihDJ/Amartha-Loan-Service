@@ -21,10 +21,6 @@ import (
 // @version			0.0.1
 // @description     Swagger documentation for Amartha Loan Service API
 
-// @securityDefinitions.apikey BearerAuth
-// @in header
-// @name Authorization
-
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
 
