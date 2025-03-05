@@ -1,4 +1,4 @@
-![ERD](https://github.com/user-attachments/assets/d6f3e6d0-023d-4659-ae98-37c48db82d99)![Swagger](https://github.com/user-attachments/assets/4ac6cb1e-c84c-448c-bdf8-4f7cc7a7c6f1)# Amartha-Loan-Service
+# Amartha-Loan-Service
 This is a loan engine service project where user can request for funding loan. Employee can approve a loan request by providing employee id and picture of proof. Approved loan request can be invested by investors. Once the investments have reached the treshold amount requested on the loan request, it will send link to agreement letter to all investors. 
 
 This project implements PostgreSQL database and Swagger for API documentation. This project is broken down into 4 layers:
@@ -47,7 +47,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 * This project implements PostgreSQL to store its data. Several tables are designed to accomodate the project specifications. Below is the ERD of the project:
 
-![ERD](https://github.com/user-attachments/assets/f88b7ddd-5034-436d-9e1c-263c0aa718ba)
+![ERD](https://github.com/user-attachments/assets/d6f3e6d0-023d-4659-ae98-37c48db82d99)
 
 * We also used DBeaver as the database tool. To install PostgreSQL, setting up the database, and install DBeaver please follow this link
 https://medium.com/@zum.hatice/how-to-create-a-postgresql-db-and-connect-in-windows-b26eaa48c7fb
