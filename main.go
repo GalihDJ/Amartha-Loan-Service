@@ -4,12 +4,16 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger" // gin-swagger middleware
+
+	docs "amartha-loan-service/docs"
+	conn "amartha-loan-service/utils/Connections"
+
+	loan "amartha-loan-service/api/v1/Loan"
 )
 
 // @title           Amartha Loan Service
@@ -30,7 +34,7 @@ type Object struct {
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", os.Getenv("ACCESS_CONTROL_ALLOW_ORIGIN")) // Replace "*" with your frontend origin if needed
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -51,6 +55,18 @@ func main() {
 
 	// Apply the CORS middleware
 	router.Use(CORSMiddleware())
+
+	// swagger basepath and host
+	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.Host = "localhost:3000"
+	fmt.Println("Host: ", docs.SwaggerInfo.Host)
+
+	// connect PSQL
+	connPSQL := conn.ConnectionMapPSQL["DEVELOPMENT"]
+	fmt.Println("PSQL DB: " + connPSQL.Database)
+
+	// initialize router for modules
+	loan.InitializeLoan(router, &connPSQL)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
