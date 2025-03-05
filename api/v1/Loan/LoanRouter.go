@@ -2,11 +2,14 @@ package loan
 
 import (
 	"github.com/gin-gonic/gin"
+
+	utils "amartha-loan-service/utils/Connections"
 )
 
-func InitializeLoan(router *gin.Engine) {
+func InitializeLoan(router *gin.Engine, connPSQL *utils.ConnectionPSQL) {
 
-	loanService := NewLoanService()
+	loanRepository := NewLoanRepository(connPSQL)
+	loanService := NewLoanService(loanRepository)
 	loanController := NewLoanController(loanService)
 
 	InitializeLoanRouters(router, loanController)
@@ -15,7 +18,12 @@ func InitializeLoan(router *gin.Engine) {
 func InitializeLoanRouters(router *gin.Engine, controller *LoanController) {
 	loanGroup := router.Group("/api/v1/")
 	{
-		loanGroup.GET("loan", controller.TestAPIGet)
-		loanGroup.POST("loan", controller.TestAPIPost)
+		loanGroup.POST("loan", controller.CreateLoanRequest)
+		loanGroup.GET("loan/:loanRequestID", controller.GetLoanRequestById)
+		loanGroup.PUT("loan/:loanRequestID", controller.ApproveLoanRequest)
+		loanGroup.POST("loan/:loanRequestID/investment", controller.CreateLoanInvestment)
+		loanGroup.POST("loan/disbursement", controller.LoanDisbursement)
+
+		loanGroup.POST("loan/investor", controller.CreateInvestor)
 	}
 }

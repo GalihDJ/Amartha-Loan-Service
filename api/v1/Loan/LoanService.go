@@ -1,32 +1,166 @@
 package loan
 
-import "fmt"
+import (
+	"amartha-loan-service/models"
+	"errors"
+	"fmt"
+	"log"
+	"time"
 
-type ILoanService interface {
-	TestAPIPost(testingInput string) (string, error)
-	TestAPIGet() (string, error)
-}
+	"github.com/google/uuid"
+)
 
 type LoanService struct {
+	repo ILoanRepository
 }
 
-func NewLoanService() ILoanService {
-	return &LoanService{}
+func NewLoanService(repo ILoanRepository) ILoanService {
+	return &LoanService{
+		repo: repo,
+	}
 }
 
-// TestAPIGet implements ILoanService.
-func (ls *LoanService) TestAPIGet() (string, error) {
+type ILoanService interface {
+	CreateLoanRequest(loanRequest *models.LoanRequest) (*models.LoanRequest, error)
+	GetLoanRequestById(loanRequestID string) (*models.LoanRequest, error)
+	ApproveLoanRequest(loanRequestID string, loanApproval *models.LoanApproval) error
+	CreateLoanInvestment(loanRequestID string, loanInvestment *models.LoanInvestment) error
 
-	fmt.Println("In TestAPIGet LoanService...")
-
-	return "Test API Get Successful", nil
+	CreateInvestor(investor *models.Investor) (int, error)
 }
 
-// TestAPIPost implements ILoanService.
-func (ls *LoanService) TestAPIPost(testingInput string) (string, error) {
-	fmt.Println("In TestAPIGet LoanService...")
+// CreateLoanRequest implements ILoanService.
+func (ls *LoanService) CreateLoanRequest(loanRequest *models.LoanRequest) (*models.LoanRequest, error) {
 
-	output := "User input: " + testingInput
+	// define loan request id
+	loanRequest.LoanRequestID = uuid.New().String()
 
-	return output, nil
+	// define loan request state
+	loanRequest.State = models.StateProposed
+
+	// define created date
+	loanRequest.CreatedDate = time.Now()
+
+	_, err := ls.repo.CreateLoanRequest(loanRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return loanRequest, nil
+}
+
+// GetLoanRequestById implements ILoanService.
+func (ls *LoanService) GetLoanRequestById(loanRequestID string) (*models.LoanRequest, error) {
+
+	// call GetLoanRequestById
+	loanRequest, err := ls.repo.GetLoanRequestById(loanRequestID)
+
+	if err != nil {
+		log.Println("Error: ", err)
+		return nil, err
+	}
+
+	return loanRequest, err
+}
+
+// ApproveLoanRequest implements ILoanService.
+func (ls *LoanService) ApproveLoanRequest(loanRequestID string, loanApproval *models.LoanApproval) error {
+
+	// get the loan from the repository
+	loanRequest, err := ls.repo.GetLoanRequestById(loanRequestID)
+	if err != nil {
+		return err
+	}
+
+	// check loan request state
+	if loanRequest.State != models.StateProposed {
+		return errors.New("only loan request with PROPOSED status can be approved")
+	}
+
+	// define loan approval id
+	loanApproval.LoanApprovalID = uuid.New().String()
+
+	// define current date for approval date
+	loanApproval.ApprovedDate = time.Now()
+
+	// Save the approval and update the loan state
+	err = ls.repo.ApproveLoan(loanRequestID, loanApproval)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// LoanInvestment implements ILoanService.
+func (ls *LoanService) CreateLoanInvestment(loanRequestID string, loanInvestment *models.LoanInvestment) error {
+
+	// get the loan request from the repository
+	loanRequest, err := ls.repo.GetLoanRequestById(loanRequestID)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Loan Rquest: ", loanRequest)
+
+	// check loan request state
+	if loanRequest.State != models.StateApproved {
+		return errors.New("investments can only be added to APPROVED loan request")
+	}
+
+	// get investments on loan
+	loanInvestments, err := ls.repo.GetLoanInvestments(loanRequestID)
+	if err != nil {
+		return err
+	}
+
+	// get total of investment
+	var totalInvestment float64
+	for _, loanInvestment := range loanInvestments {
+		totalInvestment += loanInvestment.Amount
+	}
+
+	// compare total investment and investment amount with principal amount
+	if totalInvestment+loanInvestment.Amount > loanRequest.PrincipalAmount {
+		return errors.New("total investment exceeds the loan principal")
+	}
+
+	// define loan investment id
+	loanInvestment.InvestmentID = uuid.New().String()
+
+	// define current date for approval date
+	loanInvestment.CreatedDate = time.Now()
+
+	// create loan investment
+	_, err = ls.repo.CreateLoanInvestment(loanInvestment)
+	if err != nil {
+		return err
+	}
+
+	// check if total investment and investment amount is equal to principal amount
+	if totalInvestment+loanInvestment.Amount == loanRequest.PrincipalAmount {
+		
+	}
+
+	return nil
+}
+
+// ======================================================================================================================
+
+// CreateInvestor implements ILoanService.
+func (ls *LoanService) CreateInvestor(investor *models.Investor) (int, error) {
+	// generate ID
+	investorID := uuid.New()
+	investor.InvestorID = investorID.String()
+
+	// get the current datetime
+	var currentDatetime = time.Now()
+	investor.CreatedDate = currentDatetime
+
+	rowsAffected, err := ls.repo.CreateInvestor(investor)
+	if err != nil {
+		log.Println("Error: ", err)
+		return 0, err
+	}
+	return rowsAffected, err
 }
