@@ -137,7 +137,6 @@ func (lr *LoanRepository) ApproveLoan(loanRequestID string, loanApproval *models
 
 	// update the loan request state
 	updateLoanQuery := "UPDATE loan_request SET state = $1 WHERE loan_request_id = $2"
-	fmt.Println("updateLoanQuery: ", updateLoanQuery)
 
 	_, err = tx.Exec(updateLoanQuery, models.StateApproved, loanRequestID)
 	if err != nil {
@@ -264,8 +263,6 @@ func (lr *LoanRepository) CreateLoanDisbursement(loanRequestID string, loanDisbu
 		return err
 	}
 
-	fmt.Println("loanRequestId REPO: ", loanRequestID)
-
 	// update the loan request state
 	updateLoanQuery := "UPDATE loan_request SET state = $1 WHERE loan_request_id = $2"
 
@@ -333,7 +330,6 @@ func (lr *LoanRepository) GetInvestorEmail(investorID string) (string, error) {
 	// query to get investor email
 	query := "SELECT investor_email FROM investor_list "
 	query += "WHERE investor_id = $1"
-	fmt.Println("Executed query: ", query)
 
 	var investorEmail string
 

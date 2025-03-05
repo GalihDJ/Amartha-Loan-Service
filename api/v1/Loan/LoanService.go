@@ -159,8 +159,6 @@ func (ls *LoanService) CreateLoanInvestment(loanRequestID string, loanInvestment
 
 			// call GetInvestorEmail repo to get investor email
 			investorEmail, err := ls.repo.GetInvestorEmail(loanInvestments[index].InvestorID)
-			fmt.Println("investor id: ", loanInvestments[index].InvestorID)
-			fmt.Println("investor email: ", investorEmail)
 			if err != nil {
 				log.Println("Error: ", err)
 				return err
@@ -168,10 +166,7 @@ func (ls *LoanService) CreateLoanInvestment(loanRequestID string, loanInvestment
 
 			// append email to array
 			investorEmails = append(investorEmails, investorEmail)
-			fmt.Println("In loop: ", investorEmails)
 		}
-
-		fmt.Println("After loop: ", investorEmails)
 
 		// mock send email
 		MockSendEmail(investorEmails)
@@ -189,8 +184,7 @@ func (ls *LoanService) CreateLoanDisbursement(loanRequestID string, loanDisburse
 	// define created date
 	loanDisbursement.DisbursementDate = time.Now()
 
-	fmt.Println("Loan disbursement: ")
-	fmt.Println(loanRequestID, loanDisbursement)
+	// call CreateLoanDisbursement repo
 	err := ls.repo.CreateLoanDisbursement(loanRequestID, loanDisbursement)
 	if err != nil {
 		return err

@@ -33,29 +33,10 @@ type Object struct {
 	Num int
 }
 
-func CORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(http.StatusNoContent)
-			return
-		}
-
-		c.Next()
-	}
-}
-
 func main() {
 	fmt.Println(fmt.Sprintf("Welcome to Amartha Loan Service!"))
 
 	router := gin.Default()
-
-	// Apply the CORS middleware
-	router.Use(CORSMiddleware())
 
 	// swagger basepath and host
 	docs.SwaggerInfo.BasePath = os.Getenv("SWAGGER_BASE_PATH")

@@ -15,21 +15,18 @@ const (
 // loan request model
 type LoanRequest struct {
 	LoanRequestID       string    `json:"loan_request_id"`
-	BorrowerID          string    `json:"borrower_id"`
+	BorrowerID          string    `json:"borrower_id" default:"USR-210GH80"`
 	PrincipalAmount     float64   `json:"principal_amount"`
 	Rate                float64   `json:"rate"`
 	ROI                 float64   `json:"roi"`
 	State               LoanState `json:"state"`
 	CreatedDate         time.Time `json:"created_date" format:"date-time"`
 	AgreementLetterLink string    `json:"agreement_letter_link"`
-	// LoanApproval        *LoanApproval     `json:"loan_approval"`
-	// LoanInvestments     []LoanInvestment  `json:"loan_investments"`
-	// LoanDisbursement    *LoanDisbursement `json:"loan_disbursement"`
 }
 
 // loan request model for swagger
 type LoanRequestSwagger struct {
-	BorrowerID      string    `json:"borrower_id"`
+	BorrowerID      string    `json:"borrower_id" default:"USR-210GH80"`
 	PrincipalAmount float64   `json:"principal_amount"`
 	Rate            float64   `json:"rate"`
 	ROI             float64   `json:"roi"`
@@ -41,7 +38,7 @@ type LoanApproval struct {
 	LoanApprovalID      string    `json:"loan_approval_id"`
 	LoanRequestID       string    `json:"loan_request_id"`
 	FieldValidatorProof string    `json:"field_validator_proof" default:"https://picsum.photos/200"`
-	EmployeeID          string    `json:"employee_id"`
+	EmployeeID          string    `json:"employee_id" default:"EMP-090AX71"`
 	ApprovedDate        time.Time `json:"approved_date"`
 }
 
@@ -49,7 +46,7 @@ type LoanApproval struct {
 type LoanApprovalSwagger struct {
 	LoanRequestID       string `json:"loan_request_id"`
 	FieldValidatorProof string `json:"field_validator_proof" default:"https://picsum.photos/200"`
-	EmployeeID          string `json:"employee_id"`
+	EmployeeID          string `json:"employee_id" default:"EMP-090AX71"`
 }
 
 // add investment for a loan request
@@ -73,7 +70,7 @@ type LoanDisbursement struct {
 	DisbursementID     string    `json:"disbursement_id"`
 	LoanRequestID      string    `json:"loan_request_id"`
 	AgreementLetterURL string    `json:"agreement_letter_url" default:"https://picsum.photos/200/300"`
-	EmployeeID         string    `json:"employee_id"`
+	EmployeeID         string    `json:"employee_id" default:"EMP-090AX71"`
 	DisbursementDate   time.Time `json:"disbursed_date"`
 }
 
@@ -81,17 +78,5 @@ type LoanDisbursement struct {
 type LoanDisbursementSwagger struct {
 	LoanRequestID      string `json:"loan_request_id"`
 	AgreementLetterURL string `json:"agreement_letter_url" default:"https://picsum.photos/200/300"`
-	EmployeeID         string `json:"employee_id"`
-}
-
-type Investor struct {
-	InvestorID    string    `json:"investor_id"`
-	InvestorName  string    `json:"investor_name"`
-	InvestorEmail string    `json:"investor_email"`
-	CreatedDate   time.Time `json:"created_date" format:"date-time"`
-}
-
-type InvestorSwagger struct {
-	InvestorName  string `json:"investor_name"`
-	InvestorEmail string `json:"investor_email"`
+	EmployeeID         string `json:"employee_id" default:"EMP-090AX71"`
 }
